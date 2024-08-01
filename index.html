@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Google Slides Input</title>
+    <title>Create Google Slides from Template</title>
     <script src="https://apis.google.com/js/api.js"></script>
 </head>
 <body>
-    <h1>Populate Google Slides Template</h1>
+    <h1>Create Google Slides from Template</h1>
     <form id="input-form">
         <label for="word">Enter a word:</label><br>
         <input type="text" id="word" name="word"><br><br>
@@ -36,27 +36,41 @@
         function handleFormSubmit(event) {
             event.preventDefault();
             const word = document.getElementById('word').value;
-            populateSlide(word);
+            createAndPopulateSlide(word);
         }
 
-        function populateSlide(word) {
+        function createAndPopulateSlide(word) {
             gapi.auth2.getAuthInstance().signIn().then(() => {
                 const templatePresentationId = '1RfpmUhs1Rcv1LpmikmbhQYlFKtuFsKuZq13bEpFHgEM';
                 const requests = [
                     {
-                        insertText: {
+                        duplicateObject: {
                             objectId: 'g2f0197cd1a9_0_79',
+                            objectIds: {
+                                newObjectId: 'new_slide_id'
+                            }
+                        }
+                    },
+                    {
+                        insertText: {
+                            objectId: 'new_slide_id',
                             insertionIndex: 0,
                             text: word
                         }
                     }
                 ];
 
-                gapi.client.slides.presentations.batchUpdate({
-                    presentationId: templatePresentationId,
-                    resource: { requests: requests }
-                }).then(() => {
-                    alert('Slide updated with word: ' + word);
+                gapi.client.slides.presentations.create({
+                    resource: { title: 'New Presentation from Template' }
+                }).then((createResponse) => {
+                    const newPresentationId = createResponse.result.presentationId;
+                    gapi.client.slides.presentations.batchUpdate({
+                        presentationId: newPresentationId,
+                        resource: { requests: requests }
+                    }).then(() => {
+                        const url = `https://docs.google.com/presentation/d/${newPresentationId}`;
+                        window.location.href = url;
+                    });
                 });
             });
         }
