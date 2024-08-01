@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Create Google Slides from Template</title>
+    <title>Create Google Slides from Template2</title>
     <script src="https://apis.google.com/js/api.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-    <h1>Create Google Slides from Template</h1>
+    <h1>Create Google Slides from Template2</h1>
     <form id="input-form">
         <label for="word">Enter a word:</label><br>
         <input type="text" id="word" name="word"><br><br>
@@ -14,15 +14,17 @@
     </form>
     <div id="g_id_onload"
          data-client_id="168113913917-15vs65ov3fb7hjadf55672gm6nsuf0sm.apps.googleusercontent.com"
-         data-login_uri="http://localhost:8000"
+         data-context="signin"
+         data-ux_mode="popup"
+         data-callback="handleCredentialResponse"
          data-auto_prompt="false">
     </div>
     <div class="g_id_signin"
          data-type="standard"
-         data-size="large"
+         data-shape="rectangular"
          data-theme="outline"
          data-text="sign_in_with"
-         data-shape="rectangular"
+         data-size="large"
          data-logo_alignment="left">
     </div>
 
@@ -32,39 +34,57 @@
         const DISCOVERY_DOCS = ["https://slides.googleapis.com/$discovery/rest?version=v1"];
         const SCOPES = "https://www.googleapis.com/auth/presentations https://www.googleapis.com/auth/drive.file";
 
-        function handleClientLoad() {
-            gapi.load('client', initClient);
+        let tokenClient;
+        let gapiInited = false;
+        let gisInited = false;
+
+        document.getElementById('input-form').style.display = 'none';
+
+        function gapiLoaded() {
+            gapi.load('client', initializeGapiClient);
         }
 
-        function initClient() {
-            gapi.client.init({
+        async function initializeGapiClient() {
+            await gapi.client.init({
                 apiKey: API_KEY,
-                discoveryDocs: DISCOVERY_DOCS
-            }).then(() => {
-                google.accounts.id.initialize({
-                    client_id: CLIENT_ID,
-                    callback: handleCredentialResponse
-                });
-                google.accounts.id.renderButton(
-                    document.querySelector(".g_id_signin"),
-                    { theme: "outline", size: "large" }
-                );
-                document.getElementById('input-form').addEventListener('submit', handleFormSubmit);
+                discoveryDocs: DISCOVERY_DOCS,
             });
+            gapiInited = true;
+            maybeEnableButtons();
+        }
+
+        function gisLoaded() {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: SCOPES,
+                callback: '', // defined later
+            });
+            gisInited = true;
+            maybeEnableButtons();
+        }
+
+        function maybeEnableButtons() {
+            if (gapiInited && gisInited) {
+                document.getElementById('input-form').style.display = 'block';
+                document.querySelector('.g_id_signin').style.display = 'none';
+            }
         }
 
         function handleCredentialResponse(response) {
-            const token = response.credential;
-            gapi.auth.setToken({ 'access_token': token });
+            if (response.credential) {
+                gapi.client.setToken({ access_token: response.credential });
+                document.getElementById('input-form').style.display = 'block';
+            }
         }
 
-        function handleFormSubmit(event) {
+        document.getElementById('input-form').addEventListener('submit', async function(event) {
             event.preventDefault();
             const word = document.getElementById('word').value;
+            await tokenClient.requestAccessToken({ prompt: '' });
             createAndPopulateSlide(word);
-        }
+        });
 
-        function createAndPopulateSlide(word) {
+        async function createAndPopulateSlide(word) {
             const templatePresentationId = '1RfpmUhs1Rcv1LpmikmbhQYlFKtuFsKuZq13bEpFHgEM';
             const requests = [
                 {
@@ -84,21 +104,26 @@
                 }
             ];
 
-            gapi.client.slides.presentations.create({
-                resource: { title: 'New Presentation from Template' }
-            }).then((createResponse) => {
+            try {
+                const createResponse = await gapi.client.slides.presentations.create({
+                    resource: { title: 'New Presentation from Template' }
+                });
                 const newPresentationId = createResponse.result.presentationId;
-                gapi.client.slides.presentations.batchUpdate({
+                await gapi.client.slides.presentations.batchUpdate({
                     presentationId: newPresentationId,
                     resource: { requests: requests }
-                }).then(() => {
-                    const url = `https://docs.google.com/presentation/d/${newPresentationId}`;
-                    window.location.href = url;
                 });
-            });
+                const url = `https://docs.google.com/presentation/d/${newPresentationId}`;
+                window.location.href = url;
+            } catch (err) {
+                console.error('Error creating or updating presentation:', err);
+            }
         }
 
-        document.addEventListener('DOMContentLoaded', handleClientLoad);
+        window.onload = function() {
+            gapiLoaded();
+            gisLoaded();
+        };
     </script>
 </body>
 </html>
