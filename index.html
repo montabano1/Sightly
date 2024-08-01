@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Create Google Slides from Template2</title>
+    <title>Create Google Slides from Template3</title>
     <script src="https://apis.google.com/js/api.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-    <h1>Create Google Slides from Template2</h1>
+    <h1>Create Google Slides from Template3</h1>
     <form id="input-form">
         <label for="word">Enter a word:</label><br>
         <input type="text" id="word" name="word"><br><br>
@@ -30,7 +30,6 @@
 
     <script>
         const CLIENT_ID = '168113913917-15vs65ov3fb7hjadf55672gm6nsuf0sm.apps.googleusercontent.com';
-        const API_KEY = 'AIzaSyCbxqpuOJJWbr0usCY2jbeQAJY4LvLKlGY';
         const DISCOVERY_DOCS = ["https://slides.googleapis.com/$discovery/rest?version=v1"];
         const SCOPES = "https://www.googleapis.com/auth/presentations https://www.googleapis.com/auth/drive.file";
 
@@ -46,7 +45,6 @@
 
         async function initializeGapiClient() {
             await gapi.client.init({
-                apiKey: API_KEY,
                 discoveryDocs: DISCOVERY_DOCS,
             });
             gapiInited = true;
