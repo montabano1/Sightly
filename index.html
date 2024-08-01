@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Create Google Slides from Template3</title>
+    <title>Create Google Slides from Template5</title>
     <script src="https://apis.google.com/js/api.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-    <h1>Create Google Slides from Template3</h1>
+    <h1>Create Google Slides from Template5</h1>
     <form id="input-form">
         <label for="word">Enter a word:</label><br>
         <input type="text" id="word" name="word"><br><br>
@@ -84,33 +84,57 @@
 
         async function createAndPopulateSlide(word) {
             const templatePresentationId = '1RfpmUhs1Rcv1LpmikmbhQYlFKtuFsKuZq13bEpFHgEM';
-            const requests = [
-                {
-                    duplicateObject: {
-                        objectId: 'g2f0197cd1a9_0_79',
-                        objectIds: {
-                            newObjectId: 'new_slide_id'
-                        }
-                    }
-                },
-                {
-                    insertText: {
-                        objectId: 'new_slide_id',
-                        insertionIndex: 0,
-                        text: word
-                    }
-                }
-            ];
+            const slideObjectId = 'g2f0197cd1a9_0_79';  // Replace with the correct slide object ID
+            const newSlideObjectId = `new_slide_id_${Date.now()}`;  // Ensure uniqueness
 
             try {
+                // Create a new presentation
                 const createResponse = await gapi.client.slides.presentations.create({
                     resource: { title: 'New Presentation from Template' }
                 });
                 const newPresentationId = createResponse.result.presentationId;
+
+                // Copy slides from the template to the new presentation
+                const copyRequests = [
+                    {
+                        createSlide: {
+                            objectId: newSlideObjectId,
+                            slideLayoutReference: {
+                                predefinedLayout: 'TITLE_AND_BODY'
+                            }
+                        }
+                    },
+                    {
+                        duplicateObject: {
+                            objectId: slideObjectId,
+                            objectIds: {
+                                newObjectId: newSlideObjectId
+                            }
+                        }
+                    }
+                ];
+
                 await gapi.client.slides.presentations.batchUpdate({
                     presentationId: newPresentationId,
-                    resource: { requests: requests }
+                    resource: { requests: copyRequests }
                 });
+
+                // Insert text into the new slide
+                const textRequests = [
+                    {
+                        insertText: {
+                            objectId: newSlideObjectId,
+                            insertionIndex: 0,
+                            text: word
+                        }
+                    }
+                ];
+
+                await gapi.client.slides.presentations.batchUpdate({
+                    presentationId: newPresentationId,
+                    resource: { requests: textRequests }
+                });
+
                 const url = `https://docs.google.com/presentation/d/${newPresentationId}`;
                 window.location.href = url;
             } catch (err) {
