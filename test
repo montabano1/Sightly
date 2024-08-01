@@ -95,6 +95,25 @@
             },
             "shape": {
               "shapeType": "TEXT_BOX",
+              "text": {
+                "textElements": [
+                  {
+                    "endIndex": 6,
+                    "paragraphMarker": {
+                      "style": {
+                        "direction": "LEFT_TO_RIGHT"
+                      }
+                    }
+                  },
+                  {
+                    "endIndex": 6,
+                    "textRun": {
+                      "content": "okok1\n",
+                      "style": {}
+                    }
+                  }
+                ]
+              },
               "shapeProperties": {
                 "shapeBackgroundFill": {
                   "propertyState": "INHERIT"
@@ -11762,7 +11781,7 @@
       }
     ],
     "locale": "en",
-    "revisionId": "zeKMIZDFRDmpTw",
+    "revisionId": "59sqwDmc4Sb0Aw",
     "notesMaster": {
       "objectId": "n",
       "pageType": "NOTES_MASTER",
