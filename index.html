@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Google Slides API Example</title>
+    <title>Google Slides API Example2</title>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-    <h1>Google Slides API Example</h1>
+    <h1>Google Slides API Example2</h1>
     <input type="text" id="wordInput" placeholder="Enter a word">
     <button id="authorize_button" onclick="handleAuthClick()" style="display:none;">Authorize</button>
     <button id="signout_button" onclick="handleSignoutClick()" style="display:none;">Sign Out</button>
@@ -55,7 +55,6 @@
                 if (resp.error !== undefined) {
                     throw (resp);
                 }
-                await gapi.client.load('slides', 'v1');
                 document.getElementById('signout_button').style.display = 'inline-block';
                 document.getElementById('authorize_button').innerText = 'Refresh';
                 document.getElementById('create_button').style.display = 'inline-block';
@@ -87,9 +86,10 @@
             try {
                 console.log('Attempting to copy presentation:', templatePresentationId);
                 
-                const copyResponse = await gapi.client.slides.presentations.copy({
-                    presentationId: templatePresentationId,
-                    resource: {
+                const copyResponse = await gapi.client.request({
+                    'path': `https://slides.googleapis.com/v1/presentations/${templatePresentationId}/copy`,
+                    'method': 'POST',
+                    'body': {
                         name: 'New Presentation with ' + word,
                     }
                 });
@@ -119,11 +119,12 @@
                     }
                 }];
 
-                const updateResponse = await gapi.client.slides.presentations.batchUpdate({
-                    presentationId: newPresentationId,
-                    resource: {
+                const updateResponse = await gapi.client.request({
+                    'path': `https://slides.googleapis.com/v1/presentations/${newPresentationId}:batchUpdate`,
+                    'method': 'POST',
+                    'body': {
                         requests: requests,
-                    },
+                    }
                 });
                 
                 console.log('Update response:', updateResponse);
