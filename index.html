@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Google Slides API Example3</title>
-    <script src="https://apis.google.com/js/api.js"></script>
-    <script src="https://accounts.google.com/gsi/client"></script>
+    <title>Google Slides API Example</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-    <h1>Google Slides API Example3</h1>
+    <h1>Google Slides API Example</h1>
     <input type="text" id="wordInput" placeholder="Enter a word">
-    <button onclick="handleAuthClick()">Create Presentation</button>
+    <button id="authorize_button" onclick="handleAuthClick()">Authorize</button>
+    <button id="signout_button" onclick="handleSignoutClick()" style="display:none;">Sign Out</button>
+    <button id="create_button" onclick="createSlideAndReplaceText()" style="display:none;">Create Presentation</button>
 
     <script>
         const CLIENT_ID = '168113913917-15vs65ov3fb7hjadf55672gm6nsuf0sm.apps.googleusercontent.com';
@@ -16,6 +17,8 @@
         const SCOPES = 'https://www.googleapis.com/auth/presentations https://www.googleapis.com/auth/drive';
 
         let tokenClient;
+        let gapiInited = false;
+        let gisInited = false;
 
         function gapiLoaded() {
             gapi.load('client', initializeGapiClient);
@@ -24,9 +27,9 @@
         async function initializeGapiClient() {
             await gapi.client.init({
                 discoveryDocs: [DISCOVERY_DOC],
-                clientId: CLIENT_ID,
-                scope: SCOPES
             });
+            gapiInited = true;
+            maybeEnableButtons();
         }
 
         function gisLoaded() {
@@ -35,6 +38,14 @@
                 scope: SCOPES,
                 callback: '', // defined later
             });
+            gisInited = true;
+            maybeEnableButtons();
+        }
+
+        function maybeEnableButtons() {
+            if (gapiInited && gisInited) {
+                document.getElementById('authorize_button').style.display = 'inline-block';
+            }
         }
 
         function handleAuthClick() {
@@ -42,15 +53,26 @@
                 if (resp.error !== undefined) {
                     throw (resp);
                 }
-                // Ensure we're signed in
-                await gapi.client.setToken(resp);
-                await createSlideAndReplaceText();
+                document.getElementById('signout_button').style.display = 'inline-block';
+                document.getElementById('authorize_button').innerText = 'Refresh';
+                document.getElementById('create_button').style.display = 'inline-block';
             };
 
             if (gapi.client.getToken() === null) {
                 tokenClient.requestAccessToken({prompt: 'consent'});
             } else {
                 tokenClient.requestAccessToken({prompt: ''});
+            }
+        }
+
+        function handleSignoutClick() {
+            const token = gapi.client.getToken();
+            if (token !== null) {
+                google.accounts.oauth2.revoke(token.access_token);
+                gapi.client.setToken('');
+                document.getElementById('create_button').style.display = 'none';
+                document.getElementById('signout_button').style.display = 'none';
+                document.getElementById('authorize_button').innerText = 'Authorize';
             }
         }
 
