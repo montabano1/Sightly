@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Google Slides API Example</title>
+    <title>Google Slides API Example2</title>
     <script src="https://apis.google.com/js/api.js"></script>
 </head>
 <body>
-    <h1>Google Slides API Example</h1>
+    <h1>Google Slides API Example2</h1>
     <input type="text" id="wordInput" placeholder="Enter a word">
     <button onclick="handleAuthClick()">Create Presentation</button>
     <button onclick="verifyTemplateAccess()">Verify Template Access</button>
@@ -112,7 +112,7 @@
         }
 
         async function verifyTemplateAccess() {
-            const templatePresentationId = 'YOUR_TEMPLATE_PRESENTATION_ID';
+            const templatePresentationId = '1RfpmUhs1Rcv1LpmikmbhQYlFKtuFsKuZq13bEpFHgEM';
             try {
                 const response = await gapi.client.slides.presentations.get({
                     presentationId: templatePresentationId
