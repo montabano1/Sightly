@@ -82,67 +82,67 @@
         }
 
         async function createSlideAndReplaceText() {
-    const word = document.getElementById('wordInput').value;
-    
-    const templatePresentationId = '1RfpmUhs1Rcv1LpmikmbhQYlFKtuFsKuZq13bEpFHgEM';
+            const word = document.getElementById('wordInput').value;
+            
+            const templatePresentationId = '1RfpmUhs1Rcv1LpmikmbhQYlFKtuFsKuZq13bEpFHgEM';
 
-    try {
-        console.log('Attempting to copy presentation:', templatePresentationId);
-        
-        const copyResponse = await gapi.client.drive.files.copy({
-            fileId: templatePresentationId,
-            resource: {
-                name: 'New Presentation with ' + word,
-            }
-        });
-        
-        console.log('Copy response:', copyResponse);
-        
-        if (!copyResponse.result || !copyResponse.result.id) {
-            throw new Error('Failed to copy presentation. Response: ' + JSON.stringify(copyResponse));
-        }
-        
-        const newPresentationId = copyResponse.result.id;
-        console.log('New presentation ID:', newPresentationId);
-
-        // Ensure Slides API is loaded
-        if (!gapi.client.slides) {
-            await gapi.client.load('slides', 'v1');
-        }
-
-        // Replace text in the specific shape
-        const requests = [{
-            insertText: {
-                objectId: 'i1',
-                insertionIndex: 0,
-                text: word
-            }
-        }, {
-            deleteText: {
-                objectId: 'i1',
-                textRange: {
-                    type: 'ALL'
+            try {
+                console.log('Attempting to copy presentation:', templatePresentationId);
+                
+                const copyResponse = await gapi.client.drive.files.copy({
+                    fileId: templatePresentationId,
+                    resource: {
+                        name: 'New Presentation with ' + word,
+                    }
+                });
+                
+                console.log('Copy response:', copyResponse);
+                
+                if (!copyResponse.result || !copyResponse.result.id) {
+                    throw new Error('Failed to copy presentation. Response: ' + JSON.stringify(copyResponse));
                 }
-            }
-        }];
+                
+                const newPresentationId = copyResponse.result.id;
+                console.log('New presentation ID:', newPresentationId);
 
-        const updateResponse = await gapi.client.slides.presentations.batchUpdate({
-            presentationId: newPresentationId,
-            resource: {
-                requests: requests,
-            }
-        });
-        
-        console.log('Update response:', updateResponse);
+                // Ensure Slides API is loaded
+                if (!gapi.client.slides) {
+                    await gapi.client.load('slides', 'v1');
+                }
 
-        console.log('New presentation created with ID: ' + newPresentationId);
-        alert('New presentation created successfully!');
-    } catch (err) {
-        console.error('Error creating presentation:', err);
-        console.error('Error details:', JSON.stringify(err, null, 2));
-        alert('Error creating presentation. Check console for details.');
-    }
-}
+                // Replace text in the specific shape
+                const requests = [{
+                    deleteText: {
+                        objectId: 'i1',
+                        textRange: {
+                            type: 'ALL'
+                        }
+                    }
+                }, {
+                    insertText: {
+                        objectId: 'i1',
+                        insertionIndex: 0,
+                        text: word
+                    }
+                }];
+
+                const updateResponse = await gapi.client.slides.presentations.batchUpdate({
+                    presentationId: newPresentationId,
+                    resource: {
+                        requests: requests,
+                    }
+                });
+                
+                console.log('Update response:', updateResponse);
+
+                console.log('New presentation created with ID: ' + newPresentationId);
+                alert('New presentation created successfully!');
+            } catch (err) {
+                console.error('Error creating presentation:', err);
+                console.error('Error details:', JSON.stringify(err, null, 2));
+                alert('Error creating presentation. Check console for details.');
+            }
+        }
     </script>
     <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
     <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
