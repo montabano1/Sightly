@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Google Slides API Example2</title>
+    <title>Google Slides API Example5</title>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-    <h1>Google Slides API Example2</h1>
+    <h1>Google Slides API Example5</h1>
     <input type="text" id="wordInput" placeholder="Enter a word">
     <button id="authorize_button" onclick="handleAuthClick()" style="display:none;">Authorize</button>
     <button id="signout_button" onclick="handleSignoutClick()" style="display:none;">Sign Out</button>
@@ -13,9 +13,9 @@
 
     <script>
         const CLIENT_ID = '168113913917-15vs65ov3fb7hjadf55672gm6nsuf0sm.apps.googleusercontent.com';
-        const API_KEY = 'AIzaSyCbxqpuOJJWbr0usCY2jbeQAJY4LvLKlGY'; // We'll need this to load the API
-        const DISCOVERY_DOC = 'https://slides.googleapis.com/$discovery/rest?version=v1';
-        const SCOPES = 'https://www.googleapis.com/auth/presentations https://www.googleapis.com/auth/drive';
+        const API_KEY = 'AIzaSyCbxqpuOJJWbr0usCY2jbeQAJY4LvLKlGY';
+        const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+        const SCOPES = 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/presentations';
 
         let tokenClient;
         let gapiInited = false;
@@ -86,21 +86,20 @@
             try {
                 console.log('Attempting to copy presentation:', templatePresentationId);
                 
-                const copyResponse = await gapi.client.request({
-                    'path': `https://slides.googleapis.com/v1/presentations/${templatePresentationId}/copy`,
-                    'method': 'POST',
-                    'body': {
+                const copyResponse = await gapi.client.drive.files.copy({
+                    fileId: templatePresentationId,
+                    resource: {
                         name: 'New Presentation with ' + word,
                     }
                 });
                 
                 console.log('Copy response:', copyResponse);
                 
-                if (!copyResponse.result || !copyResponse.result.presentationId) {
+                if (!copyResponse.result || !copyResponse.result.id) {
                     throw new Error('Failed to copy presentation. Response: ' + JSON.stringify(copyResponse));
                 }
                 
-                const newPresentationId = copyResponse.result.presentationId;
+                const newPresentationId = copyResponse.result.id;
                 console.log('New presentation ID:', newPresentationId);
 
                 // Replace text in the specific shape
@@ -119,10 +118,9 @@
                     }
                 }];
 
-                const updateResponse = await gapi.client.request({
-                    'path': `https://slides.googleapis.com/v1/presentations/${newPresentationId}:batchUpdate`,
-                    'method': 'POST',
-                    'body': {
+                const updateResponse = await gapi.client.slides.presentations.batchUpdate({
+                    presentationId: newPresentationId,
+                    resource: {
                         requests: requests,
                     }
                 });
