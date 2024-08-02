@@ -7,12 +7,13 @@
 <body>
     <h1>Google Slides API Example</h1>
     <input type="text" id="wordInput" placeholder="Enter a word">
-    <button id="authorize_button" onclick="handleAuthClick()">Authorize</button>
+    <button id="authorize_button" onclick="handleAuthClick()" style="display:none;">Authorize</button>
     <button id="signout_button" onclick="handleSignoutClick()" style="display:none;">Sign Out</button>
     <button id="create_button" onclick="createSlideAndReplaceText()" style="display:none;">Create Presentation</button>
 
     <script>
         const CLIENT_ID = '168113913917-15vs65ov3fb7hjadf55672gm6nsuf0sm.apps.googleusercontent.com';
+        const API_KEY = 'AIzaSyCbxqpuOJJWbr0usCY2jbeQAJY4LvLKlGY'; // We'll need this to load the API
         const DISCOVERY_DOC = 'https://slides.googleapis.com/$discovery/rest?version=v1';
         const SCOPES = 'https://www.googleapis.com/auth/presentations https://www.googleapis.com/auth/drive';
 
@@ -26,6 +27,7 @@
 
         async function initializeGapiClient() {
             await gapi.client.init({
+                apiKey: API_KEY,
                 discoveryDocs: [DISCOVERY_DOC],
             });
             gapiInited = true;
@@ -53,6 +55,7 @@
                 if (resp.error !== undefined) {
                     throw (resp);
                 }
+                await gapi.client.load('slides', 'v1');
                 document.getElementById('signout_button').style.display = 'inline-block';
                 document.getElementById('authorize_button').innerText = 'Refresh';
                 document.getElementById('create_button').style.display = 'inline-block';
