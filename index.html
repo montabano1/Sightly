@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Google Slides API Example2</title>
+    <title>Google Slides API Example3</title>
     <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://accounts.google.com/gsi/client"></script>
 </head>
 <body>
-    <h1>Google Slides API Example2</h1>
+    <h1>Google Slides API Example3</h1>
     <input type="text" id="wordInput" placeholder="Enter a word">
     <button onclick="handleAuthClick()">Create Presentation</button>
-    <button onclick="verifyTemplateAccess()">Verify Template Access</button>
 
     <script>
         const CLIENT_ID = '168113913917-15vs65ov3fb7hjadf55672gm6nsuf0sm.apps.googleusercontent.com';
-        const API_KEY = 'AIzaSyCbxqpuOJJWbr0usCY2jbeQAJY4LvLKlGY';
         const DISCOVERY_DOC = 'https://slides.googleapis.com/$discovery/rest?version=v1';
-        const SCOPES = 'https://www.googleapis.com/auth/presentations';
+        const SCOPES = 'https://www.googleapis.com/auth/presentations https://www.googleapis.com/auth/drive';
 
         let tokenClient;
 
@@ -24,8 +23,9 @@
 
         async function initializeGapiClient() {
             await gapi.client.init({
-                apiKey: API_KEY,
                 discoveryDocs: [DISCOVERY_DOC],
+                clientId: CLIENT_ID,
+                scope: SCOPES
             });
         }
 
@@ -42,6 +42,8 @@
                 if (resp.error !== undefined) {
                     throw (resp);
                 }
+                // Ensure we're signed in
+                await gapi.client.setToken(resp);
                 await createSlideAndReplaceText();
             };
 
@@ -60,11 +62,9 @@
             try {
                 console.log('Attempting to copy presentation:', templatePresentationId);
                 
-                // Copy the template presentation
-                const copyResponse = await gapi.client.request({
-                    path: `https://slides.googleapis.com/v1/presentations/${templatePresentationId}/copy`,
-                    method: 'POST',
-                    body: {
+                const copyResponse = await gapi.client.slides.presentations.copy({
+                    presentationId: templatePresentationId,
+                    resource: {
                         name: 'New Presentation with ' + word,
                     }
                 });
@@ -107,21 +107,8 @@
                 alert('New presentation created successfully!');
             } catch (err) {
                 console.error('Error creating presentation:', err);
+                console.error('Error details:', JSON.stringify(err, null, 2));
                 alert('Error creating presentation. Check console for details.');
-            }
-        }
-
-        async function verifyTemplateAccess() {
-            const templatePresentationId = '1RfpmUhs1Rcv1LpmikmbhQYlFKtuFsKuZq13bEpFHgEM';
-            try {
-                const response = await gapi.client.slides.presentations.get({
-                    presentationId: templatePresentationId
-                });
-                console.log('Template presentation access verified:', response);
-                alert('Template presentation access verified!');
-            } catch (err) {
-                console.error('Error accessing template presentation:', err);
-                alert('Error accessing template presentation. Check console for details.');
             }
         }
     </script>
